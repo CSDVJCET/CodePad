@@ -95,18 +95,18 @@ async def shutdown_db_client():
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="login.html", context={"request": request})
 
 @app.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="register.html", context={"request": request})
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
     username = request.cookies.get("username")
     role = request.cookies.get("role")
     if not username or not role:
-        return templates.TemplateResponse("login.html", {"request": request, "error": "Please log in."})
+        return templates.TemplateResponse(request=request, name="login.html", context={"request": request, "error": "Please log in."})
     
     db = get_db()
     user_profile = await _get_current_user_profile(db, username, role)
@@ -175,7 +175,7 @@ async def dashboard(request: Request):
             "tasks_review": sum(1 for t in tasks if (t.get("status") or "").lower() == "submitted_for_review"),
         }
         
-        return templates.TemplateResponse("manager_dashboard.html", {
+        return templates.TemplateResponse(request=request, name="manager_dashboard.html", context={
             "request": request,
             "username": username,
             "user_profile": user_profile,
@@ -194,8 +194,9 @@ async def dashboard(request: Request):
         my_projects = [p for p in projects if username in p.get("assigned_developers", [])]
         
         return templates.TemplateResponse(
-            "developer_dashboard.html",
-            {"request": request, "username": username, "tasks": my_tasks, "projects": my_projects, "user_profile": user_profile}
+            request=request,
+            name="developer_dashboard.html",
+            context={"request": request, "username": username, "tasks": my_tasks, "projects": my_projects, "user_profile": user_profile}
         )
 
 
@@ -205,7 +206,7 @@ async def project_detail(request: Request, project_id: str):
     username = request.cookies.get("username")
     role = request.cookies.get("role")
     if not username or not role:
-        return templates.TemplateResponse("login.html", {"request": request, "error": "Please log in."})
+        return templates.TemplateResponse(request=request, name="login.html", context={"request": request, "error": "Please log in."})
     if role != "manager":
         return RedirectResponse(url="/dashboard", status_code=302)
 
@@ -241,8 +242,9 @@ async def project_detail(request: Request, project_id: str):
     ]
 
     return templates.TemplateResponse(
-        "project_detail.html",
-        {
+        request=request,
+        name="project_detail.html",
+        context={
             "request": request,
             "username": username,
             "project": project,
@@ -261,12 +263,13 @@ async def developer_analytics_page(request: Request):
     username = request.cookies.get("username")
     role = request.cookies.get("role")
     if not username or not role:
-        return templates.TemplateResponse("login.html", {"request": request, "error": "Please log in."})
+        return templates.TemplateResponse(request=request, name="login.html", context={"request": request, "error": "Please log in."})
     if role != "manager":
         return RedirectResponse(url="/dashboard", status_code=302)
     db = get_db()
     user_profile = await _get_current_user_profile(db, username, role)
     return templates.TemplateResponse(
-        "developer_analytics.html",
-        {"request": request, "username": username, "user_profile": user_profile}
+        request=request,
+        name="developer_analytics.html",
+        context={"request": request, "username": username, "user_profile": user_profile}
     )

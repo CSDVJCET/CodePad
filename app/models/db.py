@@ -1,7 +1,9 @@
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
 from fastapi import Request
+from dotenv import load_dotenv
 
+load_dotenv()
 MONGO_DETAILS = os.getenv("MONGO_DETAILS", "mongodb://localhost:27017")
 
 class MongoDB:
